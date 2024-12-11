@@ -12,6 +12,7 @@ interface PodcastStatus {
   json?: string;
 }
 
+// Let's use a simple XML parser approach for Workers
 class SimpleXMLParser {
   private static getTagContent(xml: string, tag: string): string {
     const regex = new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 's');
@@ -67,60 +68,7 @@ class SimpleXMLParser {
   }
 }
 
-async function populateInitialState(kv: KVNamespace, xmlContent: string, timestamp: string) {
-  const jsonContent = SimpleXMLParser.parseXMLToJSON(xmlContent);
-  
-  await Promise.all([
-    kv.put("checked", timestamp),
-    kv.put("updated", timestamp),
-    kv.put("status", "populated"),
-    kv.put("xml", xmlContent),
-    kv.put("json", JSON.stringify(jsonContent)),
-    kv.delete("errorMessage")
-  ]);
-}
-
-async function updatePodcastContent(kv: KVNamespace, xmlContent: string, timestamp: string) {
-  const jsonContent = SimpleXMLParser.parseXMLToJSON(xmlContent);
-  
-  await Promise.all([
-    kv.put("checked", timestamp),
-    kv.put("updated", timestamp),
-    kv.put("status", "rotated"),
-    kv.put("xml", xmlContent),
-    kv.put("json", JSON.stringify(jsonContent)),
-    kv.delete("errorMessage")
-  ]);
-}
-
-async function updateErrorState(kv: KVNamespace, status: string, errorMessage: string, timestamp: string) {
-  await Promise.all([
-    kv.put("checked", timestamp),
-    kv.put("status", status),
-    kv.put("errorMessage", errorMessage)
-  ]);
-}
-
 export default {
-  // Handle HTTP requests
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    
-    // Only respond to root path
-    if (url.pathname === "/") {
-      return new Response("Hello, World! This is the podcast checker worker.", {
-        headers: { "Content-Type": "text/plain" }
-      });
-    }
-    
-    // 404 for all other paths
-    return new Response("Not Found", {
-      status: 404,
-      headers: { "Content-Type": "text/plain" }
-    });
-  },
-
-  // Handle scheduled tasks
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const timestamp = new Date().toISOString();
     
@@ -199,3 +147,37 @@ export default {
     }
   }
 };
+
+async function populateInitialState(kv: KVNamespace, xmlContent: string, timestamp: string) {
+  const jsonContent = SimpleXMLParser.parseXMLToJSON(xmlContent);
+  
+  await Promise.all([
+    kv.put("checked", timestamp),
+    kv.put("updated", timestamp),
+    kv.put("status", "populated"),
+    kv.put("xml", xmlContent),
+    kv.put("json", JSON.stringify(jsonContent)),
+    kv.delete("errorMessage")
+  ]);
+}
+
+async function updatePodcastContent(kv: KVNamespace, xmlContent: string, timestamp: string) {
+  const jsonContent = SimpleXMLParser.parseXMLToJSON(xmlContent);
+  
+  await Promise.all([
+    kv.put("checked", timestamp),
+    kv.put("updated", timestamp),
+    kv.put("status", "rotated"),
+    kv.put("xml", xmlContent),
+    kv.put("json", JSON.stringify(jsonContent)),
+    kv.delete("errorMessage")
+  ]);
+}
+
+async function updateErrorState(kv: KVNamespace, status: string, errorMessage: string, timestamp: string) {
+  await Promise.all([
+    kv.put("checked", timestamp),
+    kv.put("status", status),
+    kv.put("errorMessage", errorMessage)
+  ]);
+}
