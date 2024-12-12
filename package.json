@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm install"
+    "build": "npm install",
     "deploy:checker": "cd src/checker && wrangler deploy",
     "deploy:frontend": "cd src/frontend && wrangler deploy",
     "dev:checker": "cd src/checker && wrangler dev",
