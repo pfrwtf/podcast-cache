@@ -1,0 +1,20 @@
+name = "podcast-cache"
+main = "src/frontend.ts"
+compatibility_date = "2023-12-11"
+
+[build]
+command = "npm run build"
+
+[[kv_namespaces]]
+binding = "PODCAST_STORE"
+id = "365d8b09be6246d1ae56c4e6d2b2e3e2"
+preview_id = "9dd0ac47e30c4cb5b08fc37cb88b684b"
+
+[vars]
+FEED = "https://anchor.fm/s/dad65c9c/podcast/rss"
+
+# Optional: Configure the cron trigger for the checker
+[[triggers]]
+type = "cron"
+pattern = "*/15 * * * *"
+script = "src/checker.ts"
