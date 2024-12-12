@@ -38,10 +38,10 @@ export default {
       switch (path.split('/').pop()) { // Get the last segment of the path
         case '':
         case undefined:
-          return new Response("Hello from the podcast cache worker!", {
+          return new Response("Oh hai! You're in the wrong place. See https://pfr.wtf/disobedient/", {
             headers: {
               "Content-Type": "text/plain",
-              "Cache-Control": "public, max-age=3600"
+              "Cache-Control": "public, max-age=15552000"
             }
           });
 
@@ -53,7 +53,7 @@ export default {
           return new Response(xml, {
             headers: {
               "Content-Type": "application/xml",
-              "Cache-Control": "public, max-age=3600"
+              "Cache-Control": "public, max-age=15552000"
             }
           });
 
@@ -65,7 +65,7 @@ export default {
           return new Response(json, {
             headers: {
               "Content-Type": "application/json",
-              "Cache-Control": "public, max-age=3600"
+              "Cache-Control": "public, max-age=300"
             }
           });
 
