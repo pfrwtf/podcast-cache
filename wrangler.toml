@@ -12,3 +12,7 @@ preview_id = "9dd0ac47e30c4cb5b08fc37cb88b684b"
 
 [vars]
 FEED = "https://anchor.fm/s/dad65c9c/podcast/rss"
+
+[observability.logs]
+enabled = true
+
