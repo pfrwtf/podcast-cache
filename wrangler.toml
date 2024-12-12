@@ -1,6 +1,9 @@
 name = "podcast-cache"
 main = "src/frontend.ts"
-compatibility_date = "2023-12-11"
+compatibility_date = "2024-11-11"
+
+route = { pattern = "pfr.wtf/disobedient/cache/*", zone_name = "pfr.wtf" }
+workers_dev = false
 
 [build]
 command = "npm run build"
