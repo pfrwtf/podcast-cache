@@ -15,18 +15,10 @@ interface PodcastStatus {
   }
 }
 
-// [Previous SimpleXMLParser class and other helper functions remain the same]
-
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, ''); // Remove trailing slashes
-    
-    // Common cache settings for responses
-    const cacheHeaders = {
-      "Cache-Control": "public, max-age=3600", // Cache for 1 hour
-      "Content-Type": "application/json",
-    };
     
     // Helper to get the full URL for a path
     const getFullUrl = (path: string) => {
@@ -35,37 +27,58 @@ export default {
     };
 
     try {
-      switch (path.split('/').pop()) { // Get the last segment of the path
+      switch (path.split('/').pop()) {
         case '':
         case undefined:
-          return new Response("Oh hai! You're in the wrong place. See https://pfr.wtf/disobedient/", {
+          return new Response("Oh hai! You're actually in the wrong place. See https://pfr.wtf/disobedient/ for podcast episodes on our site, or find Disobedient by PFR on your favorite Podcast App!", {
             headers: {
               "Content-Type": "text/plain",
-              "Cache-Control": "public, max-age=15552000"
+              "Cache-Control": "public, max-age=15552000",
+              "CF-Cache-Status": "dynamic"
+            },
+            cf: {
+              caching: {
+                bypassCache: false,
+                cacheTtl: 3600,
+              },
             }
           });
 
         case 'xml':
           const xml = await env.PODCAST_STORE.get("xml");
           if (!xml) {
-            return new Response("Feed not found", { status: 404 });
+            return new Response("404 :: There is no XML feed currently ingested.", { status: 404 });
           }
           return new Response(xml, {
             headers: {
               "Content-Type": "application/xml",
-              "Cache-Control": "public, max-age=15552000"
+              "Cache-Control": "public, max-age=300",
+              "CF-Cache-Status": "dynamic"
+            },
+            cf: {
+              caching: {
+                bypassCache: false,
+                cacheTtl: 3600,
+              },
             }
           });
 
         case 'json':
           const json = await env.PODCAST_STORE.get("json");
           if (!json) {
-            return new Response("Feed not found", { status: 404 });
+            return new Response("404 :: There is no JSON feed currently ingested", { status: 404 });
           }
           return new Response(json, {
             headers: {
               "Content-Type": "application/json",
-              "Cache-Control": "public, max-age=300"
+              "Cache-Control": "public, max-age=300",
+              "CF-Cache-Status": "dynamic"
+            },
+            cf: {
+              caching: {
+                bypassCache: false,
+                cacheTtl: 3600,
+              },
             }
           });
 
@@ -78,7 +91,7 @@ export default {
           ]);
 
           if (!checked || !updated || !status) {
-            return new Response("Status not available", { status: 404 });
+            return new Response("404 :: There is no data currently ingested, and I can't pull any status messages.", { status: 404 });
           }
 
           const statusResponse: PodcastStatus = {
@@ -97,25 +110,36 @@ export default {
           }
 
           return new Response(JSON.stringify(statusResponse, null, 2), {
-            headers: cacheHeaders
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "public, max-age=3600",
+              "CF-Cache-Status": "dynamic"
+            },
+            cf: {
+              caching: {
+                bypassCache: false,
+                cacheTtl: 3600,
+              },
+            }
           });
 
         default:
           return new Response("Not Found", {
             status: 404,
-            headers: { "Content-Type": "text/plain" }
+            headers: { 
+              "Content-Type": "text/plain",
+              "Cache-Control": "no-store"
+            }
           });
       }
     } catch (error) {
       return new Response(JSON.stringify({ error: "Internal Server Error" }), {
         status: 500,
-        headers: { "Content-Type": "application/json" }
+        headers: { 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store"
+        }
       });
     }
-  },
-
-  // Scheduled handler remains the same as before
-  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
-    // [Previous scheduled implementation remains unchanged]
   }
 };
