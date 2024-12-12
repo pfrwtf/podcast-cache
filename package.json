@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "build": "wrangler build"
+    "deploy:checker": "cd src/checker && wrangler deploy",
+    "deploy:frontend": "cd src/frontend && wrangler deploy",
+    "dev:checker": "cd src/checker && wrangler dev",
+    "dev:frontend": "cd src/frontend && wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231218.0",
